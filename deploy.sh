@@ -7,11 +7,12 @@
 
 set -e
 
-# ---- 配置区 ----
-PROJECT_DIR="/opt/find-yourself"
+# ---- 配置区（请根据实际情况修改）----
+PROJECT_DIR="/home/qq/find-yourself"
 REPO_URL="https://github.com/BeiLiu1/find-yourself.git"
 BRANCH="main"
-NGINX_WEB_ROOT="/usr/share/nginx/html/find-yourself"
+# Nginx root 指向构建产物目录，留空则跳过复制（直接在项目目录内使用 dist）
+NGINX_WEB_ROOT=""
 
 # ---- 颜色输出 ----
 RED='\033[0;31m'
@@ -78,18 +79,39 @@ npm run build
 log "构建完成"
 
 # 6. 部署到 Nginx
-log "部署到 Nginx..."
-sudo mkdir -p "$NGINX_WEB_ROOT"
-sudo rm -rf "${NGINX_WEB_ROOT:?}/"*
-sudo cp -r dist/* "$NGINX_WEB_ROOT/"
-log "静态文件已复制到 $NGINX_WEB_ROOT"
+if [ -n "$NGINX_WEB_ROOT" ]; then
+    log "复制构建产物到 $NGINX_WEB_ROOT ..."
+    sudo mkdir -p "$NGINX_WEB_ROOT"
+    sudo rm -rf "${NGINX_WEB_ROOT:?}/"*
+    sudo cp -r dist/* "$NGINX_WEB_ROOT/"
+    log "静态文件已复制"
+    SERVE_DIR="$NGINX_WEB_ROOT"
+else
+    SERVE_DIR="$PROJECT_DIR/dist"
+    log "构建产物位于: $SERVE_DIR"
+    warn "请确保 Nginx 的 root 指向该目录"
+fi
 
-# 7. 重启 Nginx
+# 7. 检查并更新 Nginx 配置
 if command -v nginx &> /dev/null; then
+    # 查找现有配置中的 root 指向
+    NGINX_CONF=$(grep -rl "find-yourself\|personal-website" /etc/nginx/conf.d/ 2>/dev/null | head -1)
+    if [ -n "$NGINX_CONF" ]; then
+        CURRENT_ROOT=$(grep -oP '^\s*root\s+\K[^;]+' "$NGINX_CONF" 2>/dev/null | head -1)
+        if [ "$CURRENT_ROOT" != "$SERVE_DIR" ]; then
+            warn "Nginx 配置 ($NGINX_CONF) 中 root=$CURRENT_ROOT"
+            warn "但构建产物在 $SERVE_DIR"
+            read -p "是否自动更新 Nginx root 指向? (y/N): " fix
+            if [[ "$fix" =~ ^[Yy]$ ]]; then
+                sudo sed -i "s|root.*$CURRENT_ROOT|root $SERVE_DIR|" "$NGINX_CONF"
+                log "已更新 Nginx root -> $SERVE_DIR"
+            fi
+        fi
+    fi
     sudo nginx -t && sudo systemctl reload nginx
     log "Nginx 已重新加载"
 else
-    warn "未检测到 Nginx，请手动配置 Web 服务器"
+    warn "未检测到 Nginx，请手动配置 Web 服务器指向 $SERVE_DIR"
 fi
 
 echo ""
