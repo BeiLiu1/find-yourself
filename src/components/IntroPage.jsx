@@ -30,7 +30,7 @@ export default function IntroPage({ onStart }) {
         
         <div className="relative max-w-4xl mx-auto px-4 pt-16 pb-12 sm:pt-24 sm:pb-16">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100/80 text-indigo-700 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100/80 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-6">
               <Brain className="w-4 h-4" />
               心理测量工具
             </div>
@@ -38,12 +38,12 @@ export default function IntroPage({ onStart }) {
             <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight pb-2">
               中国大五人格问卷
             </h1>
-            <h2 className="text-xl sm:text-2xl font-medium text-slate-500 mt-3">
+            <h2 className="text-xl sm:text-2xl font-medium text-slate-500 dark:text-slate-400 mt-3">
               简式版 (CBF-PI-B)
             </h2>
             
-            <p className="mt-6 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              由王孟成博士和戴晓阳教授编制，共包含 <span className="font-semibold text-indigo-600">40</span> 个条目，
+            <p className="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              由王孟成博士和戴晓阳教授编制，共包含 <span className="font-semibold text-indigo-600 dark:text-indigo-400">40</span> 个条目，
               从五个核心维度全面评估您的人格特征，具有满意的信效度。
             </p>
           </div>
@@ -52,7 +52,7 @@ export default function IntroPage({ onStart }) {
 
       {/* Dimension Cards */}
       <div className="max-w-4xl mx-auto px-4 pb-12">
-        <h3 className="text-center text-lg font-semibold text-slate-700 mb-6">五大人格维度</h3>
+        <h3 className="text-center text-lg font-semibold text-slate-700 dark:text-slate-200 mb-6">五大人格维度</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
           {dimensionCards.map((dim, i) => (
             <div
@@ -63,8 +63,8 @@ export default function IntroPage({ onStart }) {
               <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${dim.color} text-white mb-3`}>
                 <dim.icon className="w-5 h-5" />
               </div>
-              <div className="font-semibold text-slate-800 text-sm">{dim.name}</div>
-              <div className="text-xs text-slate-400 mt-0.5">{dim.nameEn}</div>
+              <div className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{dim.name}</div>
+              <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{dim.nameEn}</div>
             </div>
           ))}
         </div>
@@ -73,17 +73,17 @@ export default function IntroPage({ onStart }) {
       {/* Instructions & Start */}
       <div className="max-w-2xl mx-auto px-4 pb-20">
         <div className="glass-card rounded-2xl p-6 sm:p-8 slide-up" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold">i</span>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold">i</span>
             测验说明
           </h3>
           
-          <div className="space-y-3 text-slate-600 text-sm leading-relaxed">
+          <div className="space-y-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
             <p>
               下面是一些描述人们性格特点的句子，请根据每个句子与您的性格相符程度进行评分。
             </p>
             <p>
-              评分从 <span className="font-medium text-slate-800">1（完全不符合）</span> 到 <span className="font-medium text-slate-800">6（完全符合）</span>，
+              评分从 <span className="font-medium text-slate-800 dark:text-slate-100">1（完全不符合）</span> 到 <span className="font-medium text-slate-800 dark:text-slate-100">6（完全符合）</span>，
               每个人的性格各不相同，答案没有对错之分，请根据您的实际情况作答。
             </p>
             <div className="flex items-center gap-2 flex-wrap pt-2">
@@ -101,8 +101,8 @@ export default function IntroPage({ onStart }) {
           </div>
 
           {/* Gender Selection */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <label className="block text-sm font-semibold text-slate-700 mb-3">
+          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
               请选择您的性别 <span className="text-red-400">*</span>
               <span className="font-normal text-slate-400 ml-2">（用于与常模进行比较）</span>
             </label>
@@ -112,7 +112,7 @@ export default function IntroPage({ onStart }) {
                 className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                   gender === 'male'
                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md shadow-indigo-100'
-                    : 'border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-500'
+                    : 'border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-indigo-300 hover:text-indigo-500'
                 }`}
               >
                 男性
@@ -122,7 +122,7 @@ export default function IntroPage({ onStart }) {
                 className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                   gender === 'female'
                     ? 'border-pink-500 bg-pink-50 text-pink-700 shadow-md shadow-pink-100'
-                    : 'border-slate-200 text-slate-500 hover:border-pink-300 hover:text-pink-500'
+                    : 'border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-pink-300 hover:text-pink-500'
                 }`}
               >
                 女性
@@ -145,7 +145,7 @@ export default function IntroPage({ onStart }) {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          <p className="mt-4 text-center text-xs text-slate-400">
+          <p className="mt-4 text-center text-xs text-slate-400 dark:text-slate-500">
             共 40 题，预计用时 5-8 分钟
           </p>
         </div>

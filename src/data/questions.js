@@ -124,3 +124,27 @@ export const likertLabels = [
   { value: 5, label: "大部分符合" },
   { value: 6, label: "完全符合" },
 ];
+
+export const personalityTypes = {
+  E: { label: "社交达人", emoji: "🌟" },
+  N: { label: "敏锐感知者", emoji: "🎭" },
+  C: { label: "卓越执行者", emoji: "🎯" },
+  A: { label: "温暖守护者", emoji: "🤝" },
+  O: { label: "创意探索家", emoji: "✨" },
+};
+
+export const typeModifiers = {
+  E: "热情",
+  N: "细腻",
+  C: "严谨",
+  A: "仁爱",
+  O: "灵动",
+};
+
+export function zToPercentile(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989422804014327;
+  const p = d * Math.exp(-z * z / 2) *
+    (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
+  return z > 0 ? (1 - p) * 100 : p * 100;
+}

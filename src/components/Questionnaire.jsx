@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle2, Clock } from 'lucide-react'
 import { questions, likertLabels } from '../data/questions'
 
 const ITEMS_PER_PAGE = 8
@@ -23,11 +23,27 @@ const scaleBorderColors = [
   'border-purple-300 hover:border-purple-400',
 ]
 
-export default function Questionnaire({ onComplete, onBack }) {
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+export default function Questionnaire({ onComplete, onBack, savedAnswers, onAnswersChange }) {
   const [currentPage, setCurrentPage] = useState(0)
-  const [answers, setAnswers] = useState({})
+  const [answers, setAnswers] = useState(savedAnswers || {})
   const [shake, setShake] = useState(false)
+  const [popId, setPopId] = useState(null)
+  const [elapsed, setElapsed] = useState(0)
   const containerRef = useRef(null)
+  const startTime = useRef(Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime.current) / 1000))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const pageQuestions = questions.slice(
     currentPage * ITEMS_PER_PAGE,
@@ -41,7 +57,11 @@ export default function Questionnaire({ onComplete, onBack }) {
   const allAnswered = questions.every((q) => answers[q.id] !== undefined)
 
   const handleAnswer = (questionId, value) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }))
+    const next = { ...answers, [questionId]: value }
+    setAnswers(next)
+    onAnswersChange?.(next)
+    setPopId(questionId)
+    setTimeout(() => setPopId(null), 400)
   }
 
   const handleNext = () => {
@@ -77,17 +97,23 @@ export default function Questionnaire({ onComplete, onBack }) {
   return (
     <div className="min-h-screen pb-32">
       {/* Sticky Progress Header */}
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+      <div className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               第 {currentPage + 1} / {TOTAL_PAGES} 页
             </span>
-            <span className="text-sm font-medium text-indigo-600">
-              {answeredCount} / {questions.length} 题已完成
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500">
+                <Clock className="w-3.5 h-3.5 timer-pulse" />
+                {formatTime(elapsed)}
+              </span>
+              <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                {answeredCount} / {questions.length}
+              </span>
+            </div>
           </div>
-          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full progress-fill"
               style={{ width: `${progress}%` }}
@@ -103,28 +129,27 @@ export default function Questionnaire({ onComplete, onBack }) {
             const globalIdx = currentPage * ITEMS_PER_PAGE + idx
             const isAnswered = answers[question.id] !== undefined
             const unanswered = !isAnswered && shake
+            const isPop = popId === question.id
 
             return (
               <div
                 key={question.id}
                 className={`glass-card rounded-2xl p-5 sm:p-6 transition-all duration-300 slide-up ${
                   unanswered ? 'ring-2 ring-red-300 animate-[shake_0.5s_ease-in-out]' : ''
-                } ${isAnswered ? 'ring-1 ring-emerald-200 bg-emerald-50/30' : ''}`}
+                } ${isAnswered ? 'ring-1 ring-emerald-200 dark:ring-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/10' : ''}
+                ${isPop ? 'answer-pop' : ''}`}
                 style={{ animationDelay: `${idx * 0.05}s`, animationFillMode: 'both' }}
               >
                 <div className="flex items-start gap-3 mb-4">
                   <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
                     isAnswered
-                      ? 'bg-emerald-100 text-emerald-600'
-                      : 'bg-slate-100 text-slate-500'
+                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                   }`}>
                     {globalIdx + 1}
                   </span>
-                  <p className="text-base text-slate-800 leading-relaxed pt-1 font-medium">
+                  <p className="text-base text-slate-800 dark:text-slate-100 leading-relaxed pt-1 font-medium">
                     {question.text}
-                    {question.isReverse && (
-                      <span className="ml-2 text-xs text-slate-400 font-normal">*</span>
-                    )}
                   </p>
                   {isAnswered && (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-1.5 ml-auto" />
@@ -169,12 +194,12 @@ export default function Questionnaire({ onComplete, onBack }) {
       </div>
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={handlePrev}
-            className="flex items-center gap-1 px-5 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-medium text-sm
-              hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98] transition-all"
+            className="flex items-center gap-1 px-5 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm
+              hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
             {currentPage === 0 ? '返回' : '上一页'}
@@ -187,8 +212,8 @@ export default function Questionnaire({ onComplete, onBack }) {
               onClick={handleNext}
               className={`flex items-center gap-1 px-6 py-3 rounded-xl font-medium text-sm transition-all active:scale-[0.98] ${
                 allPageAnswered
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200/50 hover:from-indigo-600 hover:to-purple-600'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200/50 dark:shadow-indigo-900/30 hover:from-indigo-600 hover:to-purple-600'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
               }`}
             >
               下一页
@@ -199,8 +224,8 @@ export default function Questionnaire({ onComplete, onBack }) {
               onClick={handleSubmit}
               className={`flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] ${
                 allAnswered
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/50 hover:from-emerald-600 hover:to-teal-600'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/50 dark:shadow-emerald-900/30 hover:from-emerald-600 hover:to-teal-600'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
